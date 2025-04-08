@@ -1,0 +1,88 @@
+version: "3"
+
+dotenv:
+  - ".env"
+
+vars:
+  GO: go
+  GOFMT: gofmt
+  GOIMPORTS: goimports
+
+tasks:
+  # デフォルトタスク - 全てのタスクを順番に実行
+  default:
+    desc: 全てのタスクを実行（lint, fmt, test, build）
+    cmds:
+      - task: lint
+      - task: fmt
+      - task: test
+      - task: build
+
+  # ビルドタスク
+  build:
+    desc: アプリケーションとツールをビルド
+    cmds:
+      - echo "Building..."
+      - mkdir -p bin
+      - '{{.GO}} build -o bin/mozisu-mcp-server .'
+      - '{{.GO}} build -o bin/charcount ./cmd/charcount'
+      - '{{.GO}} build -o bin/webserver ./cmd/webserver'
+      - echo "Build completed."
+
+  # テストタスク
+  test:
+    desc: テストを実行
+    cmds:
+      - echo "Running tests..."
+      - '{{.GO}} test -v ./...'
+      - echo "Tests completed."
+
+  # リントタスク
+  lint:
+    desc: リンターを実行
+    cmds:
+      - echo "Running linter..."
+      - cmd: |
+          if ! command -v golangci-lint &> /dev/null; then
+            echo "golangci-lint not found, installing..."
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
+          fi
+          golangci-lint run ./...
+      - echo "Lint completed."
+    silent: false
+
+  # リント自動修正タスク
+  lint-fix:
+    desc: リンターを実行して問題を自動修正
+    cmds:
+      - echo "Running linter with auto-fix..."
+      - cmd: |
+          if ! command -v golangci-lint &> /dev/null; then
+            echo "golangci-lint not found, installing..."
+            curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.2
+          fi
+          golangci-lint run --fix
+      - echo "Lint with auto-fix completed."
+    silent: false
+
+  # フォーマットタスク
+  fmt:
+    desc: コードをフォーマット
+    cmds:
+      - echo "Formatting code..."
+      - '{{.GOFMT}} -s -w .'
+      - cmd: |
+          if ! command -v goimports &> /dev/null; then
+            echo "goimports not found, installing..."
+            go install golang.org/x/tools/cmd/goimports@latest
+          fi
+          goimports -w .
+      - echo "Format completed."
+
+  # クリーンタスク
+  clean:
+    desc: ビルド成果物を削除
+    cmds:
+      - echo "Cleaning..."
+      - rm -rf bin/
+      - echo "Clean completed."

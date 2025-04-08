@@ -1,0 +1,35 @@
+run:
+  timeout: 20m
+  allow-parallel-runners: true
+
+# https://golangci-lint.run/usage/linters/
+linters:
+  disable-all: true
+  enable:
+    # Enabled by default
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    # Disabled by default
+    - exhaustive
+    - gofmt
+    - goimports
+    - gosec
+    - misspell
+    - nilerr
+    - nolintlint
+    - unconvert
+    - unparam
+    - whitespace
+
+issues:
+  exclude-dirs:
+    - cmd/test
+  exclude-rules:
+    - path: tests
+      linters:
+      # 統合テストだと、unparamな関数を作ることはよくあるため
+        - unparam

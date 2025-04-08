@@ -1,0 +1,7 @@
+DEBUG: Starting character count
+
+Text: hello
+Total characters: 5
+Non-whitespace characters: 5
+----------------------------
+DEBUG: Completed character count for 'hello'
