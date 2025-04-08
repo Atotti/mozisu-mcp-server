@@ -1,0 +1,20 @@
+{
+  "server": {
+    "mcp": {
+      "name": "Mozisu MCP Server",
+      "version": "1.0.0"
+    },
+    "web": {
+      "port": 8080,
+      "timeouts": {
+        "read": 10,
+        "write": 10,
+        "idle": 120
+      }
+    }
+  },
+  "features": {
+    "debug": false,
+    "logging": true
+  }
+}

@@ -2,7 +2,8 @@ package main
 
 import (
 	"testing"
-	"unicode"
+
+	"github.com/Atotti/mozisu-mcp-server/pkg/charcount"
 )
 
 // TestCountCharacters tests the character counting functionality
@@ -49,23 +50,15 @@ func TestCountCharacters(t *testing.T) {
 	// 各テストケースを実行
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			// 文字数をカウント
-			totalCount := len([]rune(tc.input))
-
-			// 空白以外の文字数をカウント
-			nonWhitespaceCount := 0
-			for _, r := range tc.input {
-				if !unicode.IsSpace(r) {
-					nonWhitespaceCount++
-				}
-			}
+			// 共通パッケージを使用して文字数をカウント
+			result := charcount.Count(tc.input)
 
 			// 結果を検証
-			if totalCount != tc.expectedTotal {
-				t.Errorf("Expected total count %d, got %d", tc.expectedTotal, totalCount)
+			if result.TotalCount != tc.expectedTotal {
+				t.Errorf("Expected total count %d, got %d", tc.expectedTotal, result.TotalCount)
 			}
-			if nonWhitespaceCount != tc.expectedNonWhitespace {
-				t.Errorf("Expected non-whitespace count %d, got %d", tc.expectedNonWhitespace, nonWhitespaceCount)
+			if result.NonWhitespaceCount != tc.expectedNonWhitespace {
+				t.Errorf("Expected non-whitespace count %d, got %d", tc.expectedNonWhitespace, result.NonWhitespaceCount)
 			}
 		})
 	}

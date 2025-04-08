@@ -1,67 +1,29 @@
 package main
 
 import (
-	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"os/signal"
-	"time"
-	"unicode"
-)
 
-// CharacterCount represents the result of counting characters
-type CharacterCount struct {
-	Text               string `json:"text"`
-	TotalCount         int    `json:"totalCount"`
-	NonWhitespaceCount int    `json:"nonWhitespaceCount"`
-}
+	"github.com/Atotti/mozisu-mcp-server/internal/server"
+	"github.com/Atotti/mozisu-mcp-server/pkg/charcount"
+)
 
 func main() {
 	// Define HTTP handlers
-	http.HandleFunc("/", handleHome)
-	http.HandleFunc("/count", handleCount)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", handleHome)
+	mux.HandleFunc("/count", handleCount)
 
 	// サーバー設定
-	port := 8080
-	addr := fmt.Sprintf(":%d", port)
+	config := server.DefaultConfig()
+	config.Port = 8080
 
-	// タイムアウト設定付きのサーバーを作成
-	server := &http.Server{
-		Addr:         addr,
-		Handler:      nil, // DefaultServeMux を使用
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
-		IdleTimeout:  120 * time.Second,
+	// サーバーを起動
+	log.Println("Starting character count web server...")
+	if err := server.RunHTTPServer(mux, config); err != nil {
+		log.Fatalf("Server error: %v\n", err)
 	}
-
-	// サーバーを非同期で起動
-	go func() {
-		fmt.Printf("Starting character count server on http://localhost:%d\n", port)
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("Server error: %v\n", err)
-		}
-	}()
-
-	// シグナル処理（Ctrl+C など）
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt)
-
-	// シグナルを待機
-	<-stop
-
-	// グレースフルシャットダウン
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	fmt.Println("\nShutting down server...")
-	if err := server.Shutdown(ctx); err != nil {
-		log.Fatalf("Server shutdown error: %v\n", err)
-	}
-
-	fmt.Println("Server gracefully stopped")
 }
 
 // handleHome serves the home page with a simple form
@@ -163,27 +125,23 @@ func handleCount(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Count characters
-	text := request.Text
-	totalCount := len([]rune(text))
-
-	nonWhitespaceCount := 0
-	for _, r := range text {
-		if !unicode.IsSpace(r) {
-			nonWhitespaceCount++
-		}
-	}
+	// 共通パッケージを使用して文字数をカウント
+	result := charcount.Count(request.Text)
 
 	// Create the response
-	result := CharacterCount{
-		Text:               text,
-		TotalCount:         totalCount,
-		NonWhitespaceCount: nonWhitespaceCount,
+	response := struct {
+		Text               string `json:"text"`
+		TotalCount         int    `json:"totalCount"`
+		NonWhitespaceCount int    `json:"nonWhitespaceCount"`
+	}{
+		Text:               result.Text,
+		TotalCount:         result.TotalCount,
+		NonWhitespaceCount: result.NonWhitespaceCount,
 	}
 
 	// Send the response
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(result); err != nil {
+	if err := json.NewEncoder(w).Encode(response); err != nil {
 		log.Printf("Error encoding JSON response: %v", err)
 	}
 }

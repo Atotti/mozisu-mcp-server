@@ -26,12 +26,33 @@ go mod download
 task build
 ```
 
+## プロジェクト構造
+
+```
+/
+├── cmd/                # メインアプリケーション
+│   ├── mcpserver/      # MCPサーバー実装
+│   ├── charcount/      # コマンドラインツール
+│   └── webserver/      # Webサーバー
+├── pkg/                # 共有パッケージ
+│   └── charcount/      # 文字数カウント機能
+├── internal/           # 内部パッケージ
+├── configs/            # 設定ファイル
+└── scripts/            # スクリプト
+```
+
 ## 使用方法
 
 ### MCPサーバーとして使用
 
 ```bash
-go run main.go
+go run cmd/mcpserver/main.go
+```
+
+または、ビルド済みのバイナリを使用:
+
+```bash
+./bin/mozisu-mcp-server
 ```
 
 これにより、LLMが`count_characters`ツールを使用して文字数カウント機能を利用できます。
@@ -90,11 +111,26 @@ task test
 # ビルド
 task build
 
+# リリースビルド
+task release
+
 # すべて実行（リント、フォーマット、テスト、ビルド）
 task
 
 # クリーンアップ
 task clean
+```
+
+### スクリプト
+
+`scripts/build.sh` を使用して、リリース用のビルドを実行することもできます：
+
+```bash
+# 実行権限を付与
+chmod +x scripts/build.sh
+
+# スクリプトを実行
+./scripts/build.sh
 ```
 
 ## ライセンス

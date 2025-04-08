@@ -1,15 +1,6 @@
-version: "3"
-
-dotenv:
-  - ".env"
-
-vars:
-  GO: go
-  GOFMT: gofmt
-  GOIMPORTS: goimports
+version: '3'
 
 tasks:
-  # デフォルトタスク - 全てのタスクを順番に実行
   default:
     desc: 全てのタスクを実行（lint, fmt, test, build）
     cmds:
@@ -18,26 +9,33 @@ tasks:
       - task: test
       - task: build
 
-  # ビルドタスク
   build:
     desc: アプリケーションとツールをビルド
     cmds:
       - echo "Building..."
       - mkdir -p bin
-      - '{{.GO}} build -o bin/mozisu-mcp-server .'
-      - '{{.GO}} build -o bin/charcount ./cmd/charcount'
-      - '{{.GO}} build -o bin/webserver ./cmd/webserver'
+      - go build -o bin/mozisu-mcp-server ./cmd/mcpserver
+      - go build -o bin/charcount ./cmd/charcount
+      - go build -o bin/webserver ./cmd/webserver
       - echo "Build completed."
 
-  # テストタスク
+  release:
+    desc: リリース用のビルドを実行
+    cmds:
+      - echo "Building release version..."
+      - mkdir -p build
+      - go build -ldflags="-s -w" -o build/mozisu-mcp-server ./cmd/mcpserver
+      - go build -ldflags="-s -w" -o build/charcount ./cmd/charcount
+      - go build -ldflags="-s -w" -o build/webserver ./cmd/webserver
+      - echo "Release build completed successfully!"
+
   test:
     desc: テストを実行
     cmds:
       - echo "Running tests..."
-      - '{{.GO}} test -v ./...'
+      - go test -v ./...
       - echo "Tests completed."
 
-  # リントタスク
   lint:
     desc: リンターを実行
     cmds:
@@ -51,7 +49,6 @@ tasks:
       - echo "Lint completed."
     silent: false
 
-  # リント自動修正タスク
   lint-fix:
     desc: リンターを実行して問題を自動修正
     cmds:
@@ -65,12 +62,11 @@ tasks:
       - echo "Lint with auto-fix completed."
     silent: false
 
-  # フォーマットタスク
   fmt:
     desc: コードをフォーマット
     cmds:
       - echo "Formatting code..."
-      - '{{.GOFMT}} -s -w .'
+      - gofmt -s -w .
       - cmd: |
           if ! command -v goimports &> /dev/null; then
             echo "goimports not found, installing..."
@@ -79,10 +75,9 @@ tasks:
           goimports -w .
       - echo "Format completed."
 
-  # クリーンタスク
   clean:
     desc: ビルド成果物を削除
     cmds:
       - echo "Cleaning..."
-      - rm -rf bin/
+      - rm -rf bin/ build/
       - echo "Clean completed."

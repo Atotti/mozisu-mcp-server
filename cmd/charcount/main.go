@@ -6,7 +6,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"unicode"
+
+	"github.com/Atotti/mozisu-mcp-server/pkg/charcount"
 )
 
 func main() {
@@ -55,20 +56,12 @@ func main() {
 func printCharacterCounts(text string) {
 	fmt.Println("DEBUG: Starting character count")
 
-	// Count total characters (including spaces)
-	totalCount := len([]rune(text))
+	// 共通パッケージを使用して文字数をカウント
+	result := charcount.Count(text)
 
-	// Count non-whitespace characters
-	nonWhitespaceCount := 0
-	for _, r := range text {
-		if !unicode.IsSpace(r) {
-			nonWhitespaceCount++
-		}
-	}
-
-	fmt.Printf("\nText: %s\n", text)
-	fmt.Printf("Total characters: %d\n", totalCount)
-	fmt.Printf("Non-whitespace characters: %d\n", nonWhitespaceCount)
+	fmt.Printf("\nText: %s\n", result.Text)
+	fmt.Printf("Total characters: %d\n", result.TotalCount)
+	fmt.Printf("Non-whitespace characters: %d\n", result.NonWhitespaceCount)
 	fmt.Println("----------------------------")
 
 	// Write to stderr as well for debugging
