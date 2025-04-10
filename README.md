@@ -144,9 +144,3 @@ go run cmd/webserver/main.go
 ## 📄 ライセンス
 
 このプロジェクトは [MIT License](LICENSE) の下で公開されています。
-
----
-
-<div align="center">
-  <sub>Built with ❤️ by <a href="https://github.com/Atotti">Atotti</a></sub>
-</div>
